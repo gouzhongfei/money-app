@@ -10,11 +10,13 @@ import {
   Utensils, Car, ShoppingBag, Gamepad2, Stethoscope, Briefcase, MoreHorizontal, Home as HomeIcon,
   Award, Gift, Clock,
   ArrowUpCircle, ArrowDownCircle, Wallet,
-  Sparkles, Camera, Loader2, Bot // AI 相关图标
+  Sparkles, Camera, Loader2, Bot
 } from 'lucide-react';
 
 // --- Gemini API 配置 ---
-const apiKey = ""; // 运行时环境会自动注入 Key
+// 注意：在本地开发或部署时，请在此处填入您的 API Key，或配置环境变量。
+// 在此预览环境中，请保持为空字符串，系统会自动处理。
+const apiKey = ""; 
 
 // 通用 AI 调用函数
 async function callGemini(prompt, imageBase64 = null) {
@@ -47,6 +49,7 @@ async function callGemini(prompt, imageBase64 = null) {
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   } catch (error) {
     console.error("Gemini API Error:", error);
+    // 移除 Alert，避免打断用户体验，改为静默失败或在控制台输出
     throw error;
   }
 }
@@ -491,7 +494,6 @@ function StatsView({ transactions, selectedMonth }) {
   const [chartType, setChartType] = useState('line'); 
   const [dataType, setDataType] = useState('expense'); 
   
-  // AI 分析相关状态
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisResult, setAnalysisResult] = useState("");
@@ -543,20 +545,17 @@ function StatsView({ transactions, selectedMonth }) {
     }
   }, [transactions, mainTab, trendScope, currentYear, currentMonth, dataType]);
 
-  // AI 分析函数
   const handleAIAnalysis = async () => {
     setIsAnalyzing(true);
     setShowAnalysis(true);
-    setAnalysisResult(""); // 清空旧数据
+    setAnalysisResult(""); 
     
-    // 准备数据给 AI
     const currentMonthStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
     const monthlyData = transactions.filter(t => t.date.startsWith(currentMonthStr));
     
-    // 简化数据以节省 Token
     const simplifiedData = monthlyData.map(t => ({
       d: t.date,
-      t: t.type, // expense/income
+      t: t.type, 
       c: t.category,
       a: t.amount
     }));
@@ -603,7 +602,6 @@ function StatsView({ transactions, selectedMonth }) {
       </div>
 
       <div className="flex justify-between items-center px-1">
-        {/* AI 分析入口按钮 */}
         <button
           onClick={handleAIAnalysis}
           className="flex items-center space-x-1 px-3 py-1.5 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white rounded-full text-xs font-bold shadow-md hover:scale-105 transition-transform"
@@ -717,7 +715,6 @@ function StatsView({ transactions, selectedMonth }) {
         </div>
       )}
 
-      {/* AI 分析结果模态框 */}
       {showAnalysis && (
         <div className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
@@ -841,9 +838,9 @@ function AddTransactionModal({ initialData, onClose, onSave }) {
   const [type, setType] = useState('expense');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isListening, setIsListening] = useState(false);
-  const [isProcessingAI, setIsProcessingAI] = useState(false); // AI 处理状态
+  const [isProcessingAI, setIsProcessingAI] = useState(false); 
   const [id, setId] = useState(null); 
-  const fileInputRef = useRef(null); // 图片上传引用
+  const fileInputRef = useRef(null); 
 
   useEffect(() => {
     if (initialData) {
@@ -858,7 +855,6 @@ function AddTransactionModal({ initialData, onClose, onSave }) {
 
   const currentCategories = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
-  // AI 智能解析文本
   const handleSmartParse = async () => {
     if (!note) {
       alert("请先在备注栏输入内容，例如：昨天打车花了50元");
@@ -898,7 +894,6 @@ function AddTransactionModal({ initialData, onClose, onSave }) {
     }
   };
 
-  // AI 拍照识图
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -928,14 +923,13 @@ function AddTransactionModal({ initialData, onClose, onSave }) {
         if (data.category && ALL_CATEGORY_NAMES.includes(data.category)) setCategory(data.category);
         if (data.date) setDate(data.date);
         if (data.note) setNote(data.note);
-        setType('expense'); // 默认图片识别为支出
+        setType('expense'); 
 
       } catch (err) {
         alert("图片识别失败，请重试");
         console.error(err);
       } finally {
         setIsProcessingAI(false);
-        // 清除 input value 允许重复上传同一张图
         if (fileInputRef.current) fileInputRef.current.value = '';
       }
     };
@@ -954,7 +948,7 @@ function AddTransactionModal({ initialData, onClose, onSave }) {
     recognition.onend = () => setIsListening(false);
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      setNote(transcript); // 语音识别后只填入备注，不自动解析，让用户决定是否点击“智能解析”
+      setNote(transcript); 
     };
     recognition.start();
   };
@@ -976,7 +970,6 @@ function AddTransactionModal({ initialData, onClose, onSave }) {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center animate-fade-in backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl transform transition-transform duration-300 relative">
         
-        {/* Loading Overlay */}
         {isProcessingAI && (
           <div className="absolute inset-0 bg-white/80 z-10 flex flex-col items-center justify-center rounded-2xl">
             <Loader2 className="animate-spin text-emerald-600 mb-2" size={40} />
@@ -988,7 +981,6 @@ function AddTransactionModal({ initialData, onClose, onSave }) {
           <h2 className="text-xl font-bold flex items-center">
             {initialData ? '编辑记录' : '记一笔'}
             {!initialData && (
-              // 只有新建时显示拍照按钮
               <>
                 <button 
                   onClick={() => fileInputRef.current.click()}
@@ -1086,9 +1078,7 @@ function AddTransactionModal({ initialData, onClose, onSave }) {
                   className="w-full bg-gray-50 rounded-lg pl-3 pr-20 py-2 text-sm outline-none border border-transparent focus:border-emerald-300 transition-colors"
                 />
                 
-                {/* 备注栏右侧的工具按钮 */}
                 <div className="absolute right-1 top-1 flex space-x-1">
-                   {/* 语音按钮 */}
                    <button 
                     type="button"
                     onClick={toggleListening}
@@ -1098,7 +1088,6 @@ function AddTransactionModal({ initialData, onClose, onSave }) {
                     <Mic size={16} />
                   </button>
 
-                  {/* 智能解析按钮 */}
                   <button
                     type="button"
                     onClick={handleSmartParse}
