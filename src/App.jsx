@@ -13,27 +13,17 @@ import {
   Sparkles, Camera, Loader2, Bot
 } from 'lucide-react';
 
-// --- Gemini API 配置 ---
-// 注意：在本地开发或部署时，请在此处填入您的 API Key，或配置环境变量。
-// 在此预览环境中，请保持为空字符串，系统会自动处理。
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+// --- Gemini API 客户端配置 (修改版) ---
+// 前端不再直接请求 Google，而是请求自己的后端 API (/api/gemini)
+// 这样可以隐藏 API Key，并解决跨域和网络访问问题
 
-// 通用 AI 调用函数
 async function callGemini(prompt, imageBase64 = null) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+  // 目标地址是本站的后端 Serverless Function
+  const url = '/api/gemini';
   
-  const parts = [{ text: prompt }];
-  if (imageBase64) {
-    parts.push({
-      inlineData: {
-        mimeType: "image/jpeg",
-        data: imageBase64
-      }
-    });
-  }
-
   const payload = {
-    contents: [{ parts }]
+    prompt: prompt,
+    imageBase64: imageBase64
   };
 
   try {
@@ -43,13 +33,18 @@ async function callGemini(prompt, imageBase64 = null) {
       body: JSON.stringify(payload)
     });
     
-    if (!response.ok) throw new Error('API request failed');
-    
+    // 解析后端返回的 JSON
     const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    if (!response.ok) {
+      throw new Error(data.error || 'AI Service Request failed');
+    }
+    
+    // 后端直接返回了 text 字段
+    return data.text;
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    // 移除 Alert，避免打断用户体验，改为静默失败或在控制台输出
+    console.error("AI Service Error:", error);
+    // 这里不再弹窗打断用户，让调用者决定如何处理错误
     throw error;
   }
 }
