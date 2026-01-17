@@ -16,7 +16,7 @@ import {
 // --- Gemini API 配置 ---
 // 注意：在本地开发或部署时，请在此处填入您的 API Key，或配置环境变量。
 // 在此预览环境中，请保持为空字符串，系统会自动处理。
-const apiKey = ""; 
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
 // 通用 AI 调用函数
 async function callGemini(prompt, imageBase64 = null) {

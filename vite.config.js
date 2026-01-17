@@ -12,9 +12,7 @@ export default defineConfig({
         name: '智汇记账',
         short_name: '智汇记账',
         description: '你的AI智能财务助手',
-        theme_color: '#10b981', // 翡翠绿主题色
-        background_color: '#ffffff',
-        display: 'standalone', // 这一步让它没有浏览器地址栏
+        theme_color: '#10b981',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -30,4 +28,8 @@ export default defineConfig({
       }
     })
   ],
+  // 👇 新增这部分配置，专门解决 import.meta 报错
+  build: {
+    target: 'esnext'
+  }
 })
